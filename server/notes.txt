@@ -1,0 +1,4 @@
+pwd-print working directory
+ls -a --> display hidden files
+
+ctrl + k + w -->tabs closed all

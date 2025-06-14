@@ -1,6 +1,7 @@
 
 const { hashpassword, compare } = require('../middleware/helper');
 const Usermodel = require('../models/usermodel')
+const Ordermodel=require("../models/Ordermodel")
 
 // Register
 exports.register = async (req, res) => {
@@ -24,7 +25,7 @@ exports.register = async (req, res) => {
 
     }
     catch (error) {
-        res.status(400).send({ message: 'User Registration Failed' }, error);
+        res.status(400).send({ message: 'User Registration Failed', error: error.message });
     }
 }
 
@@ -52,7 +53,7 @@ exports.login = async (req, res) => {
 
     }
     catch (error) {
-        res.status(400).send({ message: 'Login Failed' , error});
+        res.status(400).send({ message: 'Login Failed', error: error.message });
     }
 }
 
@@ -81,3 +82,57 @@ exports.forgotpassword = async (req, res) => {
     }
 }
 
+// User Edit
+exports.edituser= async (req, res) => {
+    try {
+        const { name,email,phone, address } = req.body;
+
+        if (!name || !email || !phone || !address) {
+            return res.status(400).send('Please fill all the Fields')
+        }
+
+        const updateUser=await Usermodel.findByIdAndUpdate(req.user._id,{name,email,phone,address},{new:true})
+        res.status(200).send({ message: 'User updated Successfully',updateUser})
+
+
+    } catch (error) {
+        res.status(400).send({ message: 'User Update Failed' , error});
+    }
+}
+
+// Get orders
+exports.getorder=async(req,res)=>{
+    try {
+        const orders=await Ordermodel.find({buyer:req.user._id}).populate("product").populate("buyer","name")
+        res.status(200).send(orders);
+    } catch (error) {
+        res.status(400).send(error);
+    }
+}
+
+
+// Get all orders
+exports.getAllOrders=async(req,res)=>{
+    try {
+        const orders=await Ordermodel.find({}).populate("product").populate("buyer","name").sort({createdAt:-1})
+        res.status(200).send(orders);
+    } catch (error) {
+        res.status(400).send(error);
+    }
+}
+
+// order status
+exports.orderStatus=async (req,res)=>{
+    try
+    {
+            const {id}=req.params;
+            const {status}=req.body;
+            const orders=await Ordermodel.findByIdAndUpdate(id,{status},{new:true});
+            res.status(200).send(orders)
+    }
+    catch(error)
+    {
+        res.status(400).send(error);
+
+    }
+}
